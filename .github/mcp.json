@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "nodejs": {
+      "command": "node",
+      "args": ["--require", "@modelcontextprotocol/server-nodejs"],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    "git": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-git"]
+    },
+    "sqlite": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-sqlite"],
+      "env": {
+        "DB_PATH": "./data/tasks.db"
+      }
+    }
+  }
+}
