@@ -4,6 +4,7 @@ import { TasksService } from '../tasks.service';
 import { TasksRepository } from '../tasks.repository';
 import { CreateTaskDto } from '../dto/create-task.dto';
 import { UpdateTaskDto } from '../dto/update-task.dto';
+import { LoggerService } from '../../common/logger/logger.service';
 
 describe('TasksService', () => {
   let service: TasksService;
@@ -33,6 +34,16 @@ describe('TasksService', () => {
         {
           provide: TasksRepository,
           useValue: mockRepository,
+        },
+        {
+          provide: LoggerService,
+          useValue: {
+            log: jest.fn(),
+            error: jest.fn(),
+            warn: jest.fn(),
+            debug: jest.fn(),
+            verbose: jest.fn(),
+          },
         },
       ],
     }).compile();

@@ -7,13 +7,12 @@ import {
   HttpException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import axios from 'axios';
 import { AiService } from '../ai.service';
 import { GeminiProvider } from '../providers/gemini.provider';
 import { TasksRepository } from '../../tasks/tasks.repository';
 import { GenerateTasksDto } from '../dto/generate-tasks.dto';
+import { LoggerService } from '../../common/logger/logger.service';
 
-jest.mock('axios');
 
 describe('AiService', () => {
   let service: AiService;
@@ -59,6 +58,16 @@ describe('AiService', () => {
         {
           provide: ConfigService,
           useValue: mockConfigService,
+        },
+        {
+          provide: LoggerService,
+          useValue: {
+            log: jest.fn(),
+            error: jest.fn(),
+            warn: jest.fn(),
+            debug: jest.fn(),
+            verbose: jest.fn(),
+          },
         },
       ],
     }).compile();

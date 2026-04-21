@@ -8,6 +8,7 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -38,6 +39,8 @@ export class TasksController {
     description: 'Invalid task data',
   })
   async create(@Body() createTaskDto: CreateTaskDto): Promise<TaskResponseDto> {
+    console.log('Throwing manual bad request...');
+    throw new BadRequestException('This is a manual bad request.');
     return this.tasksService.create(createTaskDto);
   }
 

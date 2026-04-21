@@ -4,8 +4,10 @@ import { AiService } from './ai.service';
 import { GeminiProvider } from './providers/gemini.provider';
 import { TasksModule } from '../tasks/tasks.module';
 
+import { LoggerModule } from '../common/logger/logger.module';
+
 @Module({
-  imports: [TasksModule],
+  imports: [TasksModule, LoggerModule],
   controllers: [AiController],
   providers: [AiService, GeminiProvider],
 })

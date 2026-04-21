@@ -3,7 +3,6 @@ import { ConfigService } from "@nestjs/config";
 import { ValidationPipe } from "@nestjs/common";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
-import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
 import { LoggingInterceptor } from "./common/interceptors/logging.interceptor";
 
 async function bootstrap() {
@@ -20,6 +19,7 @@ async function bootstrap() {
   });
 
   // Global pipes
+  /*
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -30,9 +30,10 @@ async function bootstrap() {
       },
     }),
   );
+  */
 
   // Global filters
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters();
 
   // Global interceptors
   app.useGlobalInterceptors(new LoggingInterceptor());

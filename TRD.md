@@ -13,6 +13,7 @@
 1. [Service Overview](#service-overview)
 2. [Architecture & Trade-offs](#architecture--trade-offs)
 3. [Module Responsibilities](#module-responsibilities)
+   - [Logger Module](#logger-module)
 4. [Data Model](#data-model)
 5. [API Contract](#api-contract)
 6. [Environment Variables](#environment-variables)
@@ -201,6 +202,25 @@ Infrastructure and cross-cutting concerns.
 - `filters/http-exception.filter.ts` — Global exception handler
 - `interceptors/logging.interceptor.ts` — Request/response logging
 - `pipes/validation.pipe.ts` — Global input validation
+
+---
+
+### `logger` Module
+
+Provides a centralized and injectable logging service for the application.
+
+**Files:**
+
+- `logger.service.ts` — Custom logger extending NestJS Logger
+- `logger.module.ts` — NestJS module for LoggerService
+
+**Responsibilities:**
+
+- Provide a consistent logging interface.
+- Log significant application events, including:
+    - Gemini API requests and responses (excluding API keys).
+    - User interactions with task management (create, read, update, delete).
+    - AI task generation requests and outcomes.
 
 ---
 
@@ -594,7 +614,9 @@ The global `ValidationPipe` automatically handles invalid DTOs:
 
 - ✅ Log successful requests (via LoggingInterceptor)
 - ✅ Log errors with context
-- ❌ **NEVER log API keys** (check code reviews)
+- ✅ Log all significant user interactions (e.g., task creation, AI generation requests) via `LoggerService`
+- ✅ Log Gemini API communications (request details, responses, errors) via `LoggerService`, ensuring sensitive data exclusion
+- ❌ **NEVER log API keys** (security requirement, enforced by `LoggerService` and code reviews)
 - ❌ NEVER log sensitive user data
 
 ---

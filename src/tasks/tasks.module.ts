@@ -5,8 +5,10 @@ import { TasksController } from './tasks.controller';
 import { TasksService } from './tasks.service';
 import { TasksRepository } from './tasks.repository';
 
+import { LoggerModule } from 'src/common/logger/logger.module';
+
 @Module({
-  imports: [TypeOrmModule.forFeature([Task])],
+  imports: [TypeOrmModule.forFeature([Task]), LoggerModule],
   controllers: [TasksController],
   providers: [TasksService, TasksRepository],
   exports: [TasksRepository],

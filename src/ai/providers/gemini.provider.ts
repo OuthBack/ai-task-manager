@@ -1,5 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
-import axios, { AxiosInstance } from 'axios';
+import { Injectable } from '@nestjs/common';
+import { LoggerService } from '../../common/logger/logger.service';
+
 
 interface GeminiRequest {
   contents: Array<{
@@ -21,13 +22,8 @@ interface GeminiResponse {
 
 @Injectable()
 export class GeminiProvider {
-  private readonly logger = new Logger(GeminiProvider.name);
-  private readonly axiosInstance: AxiosInstance;
+  constructor(private readonly logger: LoggerService) {
 
-  constructor() {
-    this.axiosInstance = axios.create({
-      timeout: 30000, // 30 second timeout
-    });
   }
 
   async complete(
@@ -50,24 +46,50 @@ export class GeminiProvider {
       ],
     };
 
-    const response = await this.axiosInstance.post<GeminiResponse>(
-      url,
-      payload,
-      {
+    this.logger.log(`Sending request to Gemini API. Model: ${model}, URL: ${apiUrl}/${model}:generateContent, Prompt (excerpt): ${prompt.substring(0, 100)}...`);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-      },
-    );
+        body: JSON.stringify(payload),
+        signal: controller.signal, // Associate the abort controller with the request
+      });
 
-    if (
-      !response.data.candidates ||
-      !response.data.candidates[0] ||
-      !response.data.candidates[0].content.parts[0]
-    ) {
-      throw new Error('Invalid response structure from Gemini API');
+      clearTimeout(timeoutId); // Clear the timeout if the request completes in time
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        this.logger.error(`Gemini API responded with status ${response.status}: ${errorText}`, '', GeminiProvider.name);
+        throw new Error(`Gemini API responded with status ${response.status}: ${errorText}`);
+      }
+
+      const data = (await response.json()) as GeminiResponse;
+      this.logger.log(`Received successful response from Gemini API. Status: ${response.status}`);
+
+      if (
+        !data.candidates ||
+        !data.candidates[0] ||
+        !data.candidates[0].content.parts[0]
+      ) {
+        this.logger.error('Invalid response structure from Gemini API', '', GeminiProvider.name);
+        throw new Error('Invalid response structure from Gemini API');
+      }
+
+      return data.candidates[0].content.parts[0].text;
+    } catch (error: unknown) {
+      clearTimeout(timeoutId);
+      if (error instanceof Error && error.name === 'AbortError') {
+        this.logger.error('Gemini API request timed out after 30 seconds', '', GeminiProvider.name);
+        throw new Error('Gemini API request timed out after 30 seconds');
+      }
+      this.logger.error(`Error during Gemini API call: ${(error as Error).message}`, (error as Error).stack, GeminiProvider.name);
+      throw error;
     }
-
-    return response.data.candidates[0].content.parts[0].text;
   }
 }
