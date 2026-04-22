@@ -10,8 +10,7 @@ import { Request, Response } from "express";
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  // Remove: private readonly logger = new Logger(LoggingInterceptor.name);
-  constructor(private readonly logger: Logger) {} // Inject Logger via constructor
+  private readonly logger = new Logger(LoggingInterceptor.name);
 
   intercept(context: ExecutionContext, next: any): Observable<any> {
     const request = context.switchToHttp().getRequest<Request>();
