@@ -19,10 +19,10 @@ Este projeto utiliza Docker e Docker Compose para facilitar o ambiente de desenv
 
 1. Clone o repositório (caso ainda não tenha feito).
 2. Copie os .envs dos projetos
-```bash
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
-```
+    ```bash
+    cp backend/.env.example backend/.env
+    cp frontend/.env.example frontend/.env
+    ```
 3. Na raiz do projeto, execute o comando abaixo para iniciar os containers:
 
    ```bash
