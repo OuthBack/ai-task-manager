@@ -4,7 +4,6 @@ export const configuration = () => ({
     path: process.env.DATABASE_PATH || "./data/tasks.db",
   },
   gemini: {
-    apiKey: process.env.GEMINI_API_KEY,
     apiUrl: process.env.GEMINI_API_URL,
     model: process.env.GEMINI_MODEL,
   },
