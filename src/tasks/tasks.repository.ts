@@ -1,9 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Task } from './entities/task.entity';
-import { CreateTaskDto } from './dto/create-task.dto';
-import { UpdateTaskDto } from './dto/update-task.dto';
+import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+import { Task } from "./entities/task.entity";
 
 @Injectable()
 export class TasksRepository {
@@ -12,14 +10,14 @@ export class TasksRepository {
     private readonly repository: Repository<Task>,
   ) {}
 
-  async create(createTaskDto: CreateTaskDto): Promise<Task> {
-    const task = this.repository.create(createTaskDto);
+  async create(newTask: Partial<Task>): Promise<Task> {
+    const task = this.repository.create(newTask);
     return this.repository.save(task);
   }
 
   async findAll(): Promise<Task[]> {
     return this.repository.find({
-      order: { createdAt: 'DESC' },
+      order: { createdAt: "DESC" },
     });
   }
 
@@ -29,8 +27,8 @@ export class TasksRepository {
     });
   }
 
-  async update(id: string, updateTaskDto: UpdateTaskDto): Promise<Task | null> {
-    await this.repository.update(id, updateTaskDto);
+  async update(id: string, task: Partial<Task>): Promise<Task | null> {
+    await this.repository.update(id, task);
     return this.findOne(id);
   }
 

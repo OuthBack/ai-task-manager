@@ -2,7 +2,7 @@ import {
   Injectable,
   NestInterceptor,
   ExecutionContext,
-  Logger,
+  Logger, // Keep this import
 } from "@nestjs/common";
 import { Observable } from "rxjs";
 import { tap } from "rxjs/operators";
@@ -10,7 +10,8 @@ import { Request, Response } from "express";
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(LoggingInterceptor.name);
+  // Remove: private readonly logger = new Logger(LoggingInterceptor.name);
+  constructor(private readonly logger: Logger) {} // Inject Logger via constructor
 
   intercept(context: ExecutionContext, next: any): Observable<any> {
     const request = context.switchToHttp().getRequest<Request>();

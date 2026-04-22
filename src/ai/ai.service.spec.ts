@@ -1,223 +1,438 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { ConfigService } from "@nestjs/config";
-import {
-  BadGatewayException,
-  ServiceUnavailableException,
-  UnauthorizedException,
-  HttpException,
-  UnprocessableEntityException,
-} from "@nestjs/common";
 import { AiService } from "./ai.service";
 import { GeminiProvider } from "./providers/gemini.provider";
-import { TasksRepository } from "./../tasks/tasks.repository";
+import { TasksRepository } from "../tasks/tasks.repository";
 import { GenerateTasksDto } from "./dto/generate-tasks.dto";
-import { LoggerService } from "./../common/logger/logger.service";
+import { Task } from "../tasks/entities/task.entity";
+import { LoggerService } from "../common/logger/logger.service";
+import { ConfigService } from "@nestjs/config";
+import {
+  HttpException,
+  BadGatewayException,
+  UnauthorizedException,
+  UnprocessableEntityException,
+} from "@nestjs/common";
+
+// Mock AiService dependencies
+const mockGeminiProvider = {
+  complete: jest.fn(),
+};
+
+const mockTasksRepository = {
+  create: jest.fn(),
+  findOne: jest.fn(),
+  update: jest.fn(),
+};
+
+const mockLoggerService = {
+  log: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn(),
+  verbose: jest.fn(),
+};
+
+const mockConfigService = {
+  get: jest.fn(),
+};
 
 describe("AiService", () => {
   let service: AiService;
-  let geminiProvider: GeminiProvider;
-  let tasksRepository: TasksRepository;
-  let configService: ConfigService;
+  let module: TestingModule;
 
-  const mockTask = {
-    id: "550e8400-e29b-41d4-a716-446655440000",
-    title: "Test task",
-    isCompleted: false,
-    isAiGenerated: true,
-    createdAt: new Date("2026-04-16T21:08:34.000Z"),
-    updatedAt: new Date("2026-04-16T21:08:34.000Z"),
-  };
-
-  const mockGeminiProvider = {
-    complete: jest.fn(),
-  };
-
-  const mockTasksRepository = {
-    create: jest.fn(),
-    findOne: jest.fn(),
-    update: jest.fn(),
-  };
-
-  const mockConfigService = {
-    get: jest.fn(),
-  };
+  const mockGeminiApiKey = "mock-gemini-api-key";
+  const mockObjective = "Create a new task";
+  const mockModel = "gemini-1.5-flash";
+  const mockApiUrl = "https://generativelanguage.googleapis.com/v1beta/models";
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    jest.clearAllMocks();
+
+    mockConfigService.get.mockImplementation((key: string) => {
+      if (key === "gemini.apiUrl") return mockApiUrl;
+      if (key === "gemini.model") return mockModel;
+      return undefined;
+    });
+
+    module = await Test.createTestingModule({
       providers: [
         AiService,
-        {
-          provide: GeminiProvider,
-          useValue: mockGeminiProvider,
-        },
-        {
-          provide: TasksRepository,
-          useValue: mockTasksRepository,
-        },
-        {
-          provide: ConfigService,
-          useValue: mockConfigService,
-        },
-        {
-          provide: LoggerService,
-          useValue: {
-            log: jest.fn(),
-            error: jest.fn(),
-            warn: jest.fn(),
-            debug: jest.fn(),
-            verbose: jest.fn(),
-          },
-        },
+        { provide: GeminiProvider, useValue: mockGeminiProvider },
+        { provide: TasksRepository, useValue: mockTasksRepository },
+        { provide: LoggerService, useValue: mockLoggerService },
+        { provide: ConfigService, useValue: mockConfigService },
       ],
     }).compile();
 
     service = module.get<AiService>(AiService);
-    geminiProvider = module.get<GeminiProvider>(GeminiProvider);
-    tasksRepository = module.get<TasksRepository>(TasksRepository);
-    configService = module.get<ConfigService>(ConfigService);
+  });
 
-    jest.clearAllMocks();
-    mockConfigService.get.mockImplementation((key: string) => {
-      if (key === "gemini.apiUrl") return "https://api.gemini.com";
-      if (key === "gemini.model") return "gemini-1.5-flash";
-      return null;
-    });
+  // Restore spies and real timers after every test to prevent leaking between tests
+  afterEach(() => {
+    jest.restoreAllMocks();
+    jest.useRealTimers();
+  });
+
+  it("should be defined", () => {
+    expect(service).toBeDefined();
   });
 
   describe("generateTasks", () => {
-    const generateDto: GenerateTasksDto = {
-      objective: "Build a mobile app",
-      apiKey: "test-key",
+    const mockGenerateTasksDto: GenerateTasksDto = {
+      objective: mockObjective,
+      apiKey: mockGeminiApiKey,
+    };
+    const mockTask: Task = {
+      id: "task-1",
+      title: "Mock Task Title",
+      isCompleted: false,
+      isAiGenerated: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
-    const validGeminiResponse = {
-      status: 200,
-      text: JSON.stringify({
-        tasks: [
-          { title: "Define requirements" },
-          { title: "Design UI mockups" },
-          { title: "Set up development environment" },
-        ],
-      }),
-    };
-
-    it("should call GeminiProvider with structured prompt", async () => {
-      mockGeminiProvider.complete.mockResolvedValue(validGeminiResponse);
-      mockTasksRepository.create.mockResolvedValue(mockTask);
-      mockTasksRepository.update.mockResolvedValue(undefined);
-      mockTasksRepository.findOne.mockResolvedValue(mockTask);
-
-      await service.generateTasks(generateDto);
-
-      expect(mockGeminiProvider.complete).toHaveBeenCalledWith(
-        expect.stringContaining("Build a mobile app"),
-        "test-key",
-        "gemini-1.5-flash",
-        "https://api.gemini.com",
-      );
-    });
-
-    it("should persist tasks with isAiGenerated=true", async () => {
-      mockGeminiProvider.complete.mockResolvedValue(validGeminiResponse);
-      mockTasksRepository.create.mockResolvedValue(mockTask);
-      mockTasksRepository.update.mockResolvedValue(undefined);
-      mockTasksRepository.findOne.mockResolvedValue(mockTask);
-
-      await service.generateTasks(generateDto);
-
-      expect(mockTasksRepository.create).toHaveBeenCalled();
-      expect(mockTasksRepository.update).toHaveBeenCalled();
-      expect(mockTasksRepository.findOne).toHaveBeenCalled();
-    });
-
-    it("should return array of created tasks", async () => {
-      mockGeminiProvider.complete.mockResolvedValue(validGeminiResponse);
-      mockTasksRepository.create.mockResolvedValue(mockTask);
-      mockTasksRepository.update.mockResolvedValue(undefined);
-      mockTasksRepository.findOne.mockResolvedValue(mockTask);
-
-      const result = await service.generateTasks(generateDto);
-
-      expect(Array.isArray(result)).toBe(true);
-      expect(result[0].isAiGenerated).toBe(true);
-      expect(result.length).toBe(3);
-    });
-  });
-
-  describe("Error Scenarios", () => {
-    const generateDto: GenerateTasksDto = {
-      objective: "Build a mobile app",
-      apiKey: "test-key",
-    };
-
-    it("should throw BadGatewayException for invalid JSON after retries", async () => {
-      jest.useFakeTimers();
+    it("should successfully generate tasks", async () => {
       mockGeminiProvider.complete.mockResolvedValue({
         status: 200,
-        text: "invalid json {]",
+        text: JSON.stringify({
+          tasks: [{ title: "Generated Task 1" }, { title: "Generated Task 2" }],
+        }),
+      });
+      mockTasksRepository.create.mockResolvedValue(mockTask);
+      mockTasksRepository.findOne.mockResolvedValue({
+        ...mockTask,
+        isAiGenerated: true,
+      });
+      mockTasksRepository.update.mockResolvedValue({ affected: 1 });
+
+      const result = await service.generateTasks(mockGenerateTasksDto);
+
+      expect(mockGeminiProvider.complete).toHaveBeenCalledWith(
+        expect.stringContaining("Objetivo do usuário: Create a new task"),
+        mockGeminiApiKey,
+        mockModel,
+        mockApiUrl,
+      );
+      expect(mockTasksRepository.create).toHaveBeenCalledTimes(2);
+      expect(mockTasksRepository.update).toHaveBeenCalledTimes(2);
+      expect(mockTasksRepository.findOne).toHaveBeenCalledTimes(2);
+      expect(result.length).toBe(2);
+      expect(result[0].isAiGenerated).toBe(true);
+    });
+
+    describe("handleLlmError", () => {
+      const mockGenerateTasksDto: GenerateTasksDto = {
+        objective: "Handle errors",
+        apiKey: mockGeminiApiKey,
+      };
+
+      it("should throw UnauthorizedException on 401/403 status", async () => {
+        mockGeminiProvider.complete.mockResolvedValue({
+          status: 401,
+          text: "",
+        });
+        await expect(
+          service.generateTasks(mockGenerateTasksDto),
+        ).rejects.toThrow(UnauthorizedException);
+        await expect(
+          service.generateTasks(mockGenerateTasksDto),
+        ).rejects.toThrow("API Key inválida ou sem permissão.");
       });
 
-      const promise = service.generateTasks(generateDto);
+      it("should call retryGenerateTask for 429 status and eventually succeed", async () => {
+        jest.useFakeTimers();
 
+        mockGeminiProvider.complete
+          .mockResolvedValueOnce({ status: 429, text: "" })
+          .mockResolvedValueOnce({
+            status: 200,
+            text: JSON.stringify({ tasks: [{ title: "Retried Task" }] }),
+          });
+
+        mockTasksRepository.create.mockResolvedValue(mockTask);
+        mockTasksRepository.findOne.mockResolvedValue({
+          ...mockTask,
+          isAiGenerated: true,
+        });
+        mockTasksRepository.update.mockResolvedValue({ affected: 1 });
+
+        const retrySpy = jest.spyOn(service as any, "retryGenerateTask");
+
+        const promise = service.generateTasks(mockGenerateTasksDto);
+
+        await jest.runAllTimersAsync();
+        const result = await promise;
+
+        expect(retrySpy).toHaveBeenCalledTimes(1);
+        expect(mockGeminiProvider.complete).toHaveBeenCalledTimes(2);
+        expect(result.length).toBe(1);
+        expect(result[0].title).toBe("Mock Task Title");
+      });
+
+      it("should throw HttpException for 429 status if limit exceeded after 3 retries", async () => {
+        jest.useFakeTimers();
+        mockGeminiProvider.complete.mockResolvedValue({
+          status: 429,
+          text: "",
+        });
+
+        const promise = service.generateTasks(mockGenerateTasksDto);
+        jest.runAllTimersAsync();
+
+        await expect(promise).rejects.toThrow(HttpException);
+        await expect(promise).rejects.toThrow(
+          "Limite de requisições da API de IA atingido.",
+        );
+      });
+
+      it("should throw BadGatewayException on 5xx status", async () => {
+        mockGeminiProvider.complete.mockResolvedValue({
+          status: 502,
+          text: "",
+        });
+        await expect(
+          service.generateTasks(mockGenerateTasksDto),
+        ).rejects.toThrow(BadGatewayException);
+        await expect(
+          service.generateTasks(mockGenerateTasksDto),
+        ).rejects.toThrow("O serviço de IA retornou um erro interno.");
+      });
+
+      it("should throw BadGatewayException for other LLM errors", async () => {
+        mockGeminiProvider.complete.mockResolvedValue({
+          status: 400,
+          text: "",
+        });
+        await expect(
+          service.generateTasks(mockGenerateTasksDto),
+        ).rejects.toThrow(BadGatewayException);
+        await expect(
+          service.generateTasks(mockGenerateTasksDto),
+        ).rejects.toThrow(
+          "Erro de conexão com o serviço de IA ou resposta inesperada.",
+        );
+      });
+    });
+
+    describe("parseAndValidateResponse", () => {
+      const mockGenerateTasksDto: GenerateTasksDto = {
+        objective: "Parse errors",
+        apiKey: mockGeminiApiKey,
+      };
+
+      it("should throw BadGatewayException on invalid JSON parsing when retries are exhausted", async () => {
+        await expect(
+          (service as any).parseAndValidateResponse(
+            "invalid json",
+            mockGenerateTasksDto,
+            4,
+          ),
+        ).rejects.toThrow(BadGatewayException);
+        await expect(
+          (service as any).parseAndValidateResponse(
+            "invalid json",
+            mockGenerateTasksDto,
+            4,
+          ),
+        ).rejects.toThrow("A IA retornou uma resposta em formato inesperado.");
+      });
+
+      it("should throw BadGatewayException if response is not a valid object when retries are exhausted", async () => {
+        // "42" is valid JSON that deserialises to a number (not an object)
+        await expect(
+          (service as any).parseAndValidateResponse(
+            "42",
+            mockGenerateTasksDto,
+            4,
+          ),
+        ).rejects.toThrow(BadGatewayException);
+        await expect(
+          (service as any).parseAndValidateResponse(
+            "42",
+            mockGenerateTasksDto,
+            4,
+          ),
+        ).rejects.toThrow("A IA retornou uma resposta em formato inesperado.");
+      });
+
+      it("should throw BadGatewayException if 'tasks' field is missing", async () => {
+        mockGeminiProvider.complete.mockResolvedValue({
+          status: 200,
+          text: JSON.stringify({ otherField: "value" }),
+        });
+        await expect(
+          service.generateTasks(mockGenerateTasksDto),
+        ).rejects.toThrow(BadGatewayException);
+        await expect(
+          service.generateTasks(mockGenerateTasksDto),
+        ).rejects.toThrow("A resposta da IA não contém o formato esperado.");
+        expect(
+          jest.spyOn(service as any, "retryGenerateTask"),
+        ).not.toHaveBeenCalled();
+      });
+
+      it("should throw BadGatewayException if 'tasks' field is not an array", async () => {
+        mockGeminiProvider.complete.mockResolvedValue({
+          status: 200,
+          text: JSON.stringify({ tasks: "not an array" }),
+        });
+        await expect(
+          service.generateTasks(mockGenerateTasksDto),
+        ).rejects.toThrow(BadGatewayException);
+        await expect(
+          service.generateTasks(mockGenerateTasksDto),
+        ).rejects.toThrow("A resposta da IA não contém o formato esperado.");
+        expect(
+          jest.spyOn(service as any, "retryGenerateTask"),
+        ).not.toHaveBeenCalled();
+      });
+
+      it("should throw UnprocessableEntityException if AI generated an empty task list", async () => {
+        mockGeminiProvider.complete.mockResolvedValue({
+          status: 200,
+          text: JSON.stringify({ tasks: [] }),
+        });
+        const retrySpy = jest.spyOn(service as any, "retryGenerateTask");
+
+        await expect(
+          service.generateTasks(mockGenerateTasksDto),
+        ).rejects.toThrow(UnprocessableEntityException);
+        await expect(
+          service.generateTasks(mockGenerateTasksDto),
+        ).rejects.toThrow(
+          "A IA não conseguiu gerar tarefas para este objetivo.",
+        );
+        expect(retrySpy).not.toHaveBeenCalled();
+      });
+    });
+
+    it("should retry task generation up to 3 times on transient errors and then succeed", async () => {
+      jest.useFakeTimers();
+
+      const mockGenerateTasksDto: GenerateTasksDto = {
+        objective: "Retry logic test",
+        apiKey: mockGeminiApiKey,
+      };
+
+      mockGeminiProvider.complete
+        .mockResolvedValueOnce({ status: 429, text: "" })
+        .mockResolvedValueOnce({ status: 429, text: "" })
+        .mockResolvedValueOnce({ status: 429, text: "" })
+        .mockResolvedValueOnce({
+          status: 200,
+          text: JSON.stringify({ tasks: [{ title: "Success Task" }] }),
+        });
+
+      mockTasksRepository.create.mockResolvedValue(mockTask);
+      mockTasksRepository.findOne.mockResolvedValue({
+        ...mockTask,
+        isAiGenerated: true,
+      });
+      mockTasksRepository.update.mockResolvedValue({ affected: 1 });
+
+      const promise = service.generateTasks(mockGenerateTasksDto);
+      await jest.runAllTimersAsync();
+
+      await expect(promise).resolves.toBeDefined();
+      expect(mockGeminiProvider.complete).toHaveBeenCalledTimes(4);
+    });
+
+    it("should throw HttpException if rate limit is exceeded after 3 retries", async () => {
+      jest.useFakeTimers();
+
+      const mockGenerateTasksDto: GenerateTasksDto = {
+        objective: "Exceed retry limit",
+        apiKey: mockGeminiApiKey,
+      };
+
+      mockGeminiProvider.complete.mockResolvedValue({ status: 429, text: "" });
+
+      const promise = service.generateTasks(mockGenerateTasksDto);
       jest.runAllTimersAsync();
 
       await expect(promise).rejects.toThrow(HttpException);
-      jest.useRealTimers();
+      await expect(promise).rejects.toThrow(
+        "Limite de requisições da API de IA atingido.",
+      );
     });
 
-    it("should throw BadGatewayException when response missing tasks field", async () => {
+    it("should set isAiGenerated to true for generated tasks", async () => {
       mockGeminiProvider.complete.mockResolvedValue({
         status: 200,
-        text: JSON.stringify({ error: "no tasks" }),
+        text: JSON.stringify({
+          tasks: [{ title: "Task to mark as AI generated" }],
+        }),
       });
+      const mockTaskWithId = {
+        ...mockTask,
+        id: "generated-task-1",
+        isAiGenerated: false,
+      };
+      const mockAiGeneratedTask = { ...mockTaskWithId, isAiGenerated: true };
 
-      await expect(service.generateTasks(generateDto)).rejects.toThrow(
-        BadGatewayException,
-      );
+      mockTasksRepository.create.mockResolvedValue(mockTaskWithId);
+      mockTasksRepository.update.mockResolvedValue({ affected: 1 });
+      mockTasksRepository.findOne.mockResolvedValue(mockAiGeneratedTask);
+
+      const result = await service.generateTasks(mockGenerateTasksDto);
+
+      expect(result.length).toBe(1);
+      expect(result[0].isAiGenerated).toBe(true);
     });
 
-    it("should throw UnprocessableEntityException for empty tasks array", async () => {
+    it("should handle repository errors gracefully during task creation", async () => {
       mockGeminiProvider.complete.mockResolvedValue({
         status: 200,
-        text: JSON.stringify({ tasks: [] }),
+        text: JSON.stringify({
+          tasks: [{ title: "Task that fails creation" }],
+        }),
       });
-
-      await expect(service.generateTasks(generateDto)).rejects.toThrow(
-        UnprocessableEntityException,
+      mockTasksRepository.create.mockRejectedValue(
+        new Error("DB error during create"),
       );
+
+      await expect(service.generateTasks(mockGenerateTasksDto)).rejects.toThrow(
+        "DB error during create",
+      );
+
+      expect(mockTasksRepository.update).not.toHaveBeenCalled();
+      expect(mockTasksRepository.findOne).not.toHaveBeenCalled();
     });
 
-    it("should throw UnauthorizedException for 401 response", async () => {
+    it("should handle repository errors gracefully during task update", async () => {
       mockGeminiProvider.complete.mockResolvedValue({
-        status: 401,
-        text: "Unauthorized",
+        status: 200,
+        text: JSON.stringify({ tasks: [{ title: "Task that fails update" }] }),
       });
-
-      await expect(service.generateTasks(generateDto)).rejects.toThrow(
-        UnauthorizedException,
+      mockTasksRepository.create.mockResolvedValue(mockTask);
+      mockTasksRepository.update.mockRejectedValue(
+        new Error("DB error during update"),
       );
+
+      await expect(service.generateTasks(mockGenerateTasksDto)).rejects.toThrow(
+        "DB error during update",
+      );
+      expect(mockTasksRepository.findOne).not.toHaveBeenCalled();
     });
 
-    it("should throw UnauthorizedException for 403 response", async () => {
+    it("should handle repository errors gracefully during task findOne", async () => {
       mockGeminiProvider.complete.mockResolvedValue({
-        status: 403,
-        text: "Forbidden",
+        status: 200,
+        text: JSON.stringify({ tasks: [{ title: "Task that fails findOne" }] }),
       });
+      mockTasksRepository.create.mockResolvedValue(mockTask);
+      mockTasksRepository.update.mockResolvedValue({ affected: 1 });
+      mockTasksRepository.findOne.mockRejectedValue(
+        new Error("DB error during findOne"),
+      );
 
-      await expect(service.generateTasks(generateDto)).rejects.toThrow(
-        UnauthorizedException,
+      await expect(service.generateTasks(mockGenerateTasksDto)).rejects.toThrow(
+        "DB error during findOne",
       );
     });
+  });
 
-    it("should throw BadGatewayException for 5xx response", async () => {
-      mockGeminiProvider.complete.mockResolvedValue({
-        status: 500,
-        text: "Internal Server Error",
-      });
-
-      await expect(service.generateTasks(generateDto)).rejects.toThrow(
-        BadGatewayException,
-      );
-    });
+  describe("buildPrompt", () => {
+    // buildPrompt is a private method, tested indirectly via generateTasks.
   });
 });

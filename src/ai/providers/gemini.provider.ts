@@ -87,9 +87,7 @@ export class GeminiProvider {
       }
 
       if (
-        !data.candidates ||
-        !data.candidates[0] ||
-        !data.candidates[0].content.parts[0]
+        !data.candidates?.[0]?.content?.parts?.[0]
       ) {
         this.logger.error(
           "Invalid response structure from Gemini API",

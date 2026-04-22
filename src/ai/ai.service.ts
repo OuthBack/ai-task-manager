@@ -17,7 +17,7 @@ import { LoggerService } from "../common/logger/logger.service";
 
 @Injectable()
 export class AiService {
-  THROTTLE = 2 * 1000; // 2 seconds
+  private readonly THROTTLE = 2 * 1000; // 2 seconds
 
   constructor(
     private readonly llmProvider: GeminiProvider,
