@@ -13,50 +13,58 @@ import { TasksRepository } from "../tasks/tasks.repository";
 import { GenerateTasksDto } from "./dto/generate-tasks.dto";
 import { Task } from "../tasks/entities/task.entity";
 import { AiResponseDto } from "./dto/ai-response.dto";
-import { LoggerService } from "src/common/logger/logger.service";
+import { LoggerService } from "../common/logger/logger.service";
 
 @Injectable()
 export class AiService {
+  THROTTLE = 2 * 1000; // 2 seconds
+
   constructor(
-    private readonly geminiProvider: GeminiProvider,
+    private readonly llmProvider: GeminiProvider,
     private readonly tasksRepository: TasksRepository,
     private readonly configService: ConfigService,
     private readonly logger: LoggerService,
-  ) {
+  ) {}
 
-  }
-
-  async generateTasks(generateTasksDto: GenerateTasksDto): Promise<Task[]> {
+  async generateTasks(
+    generateTasksDto: GenerateTasksDto,
+    retries = 0,
+  ): Promise<Task[]> {
     const { objective, apiKey } = generateTasksDto;
 
-    this.logger.log(`Initiating AI task generation for objective: "${objective}"`);
+    if (retries > 3) {
+      this.logger.warn(`AI rate limit exceeded.`, AiService.name);
+      throw new HttpException(
+        "Limite de requisições da API de IA atingido.",
+        429,
+      );
+    }
+
+    this.logger.log(
+      `Initiating AI task generation for objective: "${objective}" - RETRIES: ${retries}`,
+    );
 
     const prompt = this.buildPrompt(objective);
 
-    let response: string;
-    try {
-      const geminiApiUrl = this.configService.get<string>("gemini.apiUrl");
-      const geminiModel = this.configService.get<string>("gemini.model");
+    const geminiApiUrl = this.configService.get<string>("gemini.apiUrl");
+    const geminiModel = this.configService.get<string>("gemini.model");
 
-      response = await this.geminiProvider.complete(
-        prompt,
-        apiKey,
-        geminiModel,
-        geminiApiUrl,
-      );
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        this.logger.error(`Error communicating with Gemini API for objective "${objective}": ${error.message}`, error.stack, AiService.name);
-      } else {
-        this.logger.error(`Error communicating with Gemini API for objective "${objective}": ${String(error)}`, undefined, AiService.name);
-      }
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      this.handleLlmError(error);
+    const response = await this.llmProvider.complete(
+      prompt,
+      apiKey,
+      geminiModel,
+      geminiApiUrl,
+    );
+
+    if (response.status !== 200) {
+      this.handleLlmError(response.status, generateTasksDto, retries);
     }
 
-    const parsedResponse = this.parseAndValidateResponse(response);
+    const parsedResponse = await this.parseAndValidateResponse(
+      response.text,
+      generateTasksDto,
+      retries,
+    );
 
     const createdTasks: Task[] = [];
     for (const taskData of parsedResponse.tasks) {
@@ -72,7 +80,9 @@ export class AiService {
       }
     }
 
-    this.logger.log(`Successfully generated ${createdTasks.length} tasks for objective: "${objective}"`);
+    this.logger.log(
+      `Successfully generated ${createdTasks.length} tasks for objective: "${objective}"`,
+    );
     return createdTasks;
   }
 
@@ -89,33 +99,64 @@ REGRAS ESTRITAS:
 Objetivo do usuário: ${objective}`;
   }
 
-  private parseAndValidateResponse(response: string): AiResponseDto {
+  private async parseAndValidateResponse(
+    response: string,
+    generateTasksDto: GenerateTasksDto,
+    retries: number,
+  ): Promise<AiResponseDto> {
     let parsed: unknown;
 
     try {
       parsed = JSON.parse(response);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        this.logger.error(`Failed to parse AI response JSON: ${response.substring(0, 200)}...`, error.stack, AiService.name);
+        this.logger.error(
+          `Failed to parse AI response JSON: ${response.substring(0, 200)}...`,
+          error.stack,
+          AiService.name,
+        );
       } else {
-        this.logger.error(`Failed to parse AI response JSON: ${response.substring(0, 200)}...`, undefined, AiService.name);
+        this.logger.error(
+          `Failed to parse AI response JSON: ${response.substring(0, 200)}...`,
+          undefined,
+          AiService.name,
+        );
       }
-      throw new BadGatewayException(
-        "A IA retornou uma resposta em formato inesperado.",
-      );
+
+      if (retries > 3) {
+        throw new BadGatewayException(
+          "A IA retornou uma resposta em formato inesperado.",
+        );
+      }
+
+      parsed = await this.retryGenerateTask(generateTasksDto, retries);
     }
 
     if (!parsed || typeof parsed !== "object") {
-      this.logger.error(`AI response is not a valid object: ${response.substring(0, 200)}...`, '', AiService.name);
-      throw new BadGatewayException(
-        "A IA retornou uma resposta em formato inesperado.",
+      this.logger.error(
+        `AI response is not a valid object: ${response.substring(0, 200)}...`,
+        "",
+        AiService.name,
       );
+
+      if (retries > 3) {
+        throw new BadGatewayException(
+          "A IA retornou uma resposta em formato inesperado.",
+        );
+      }
+
+      parsed = await this.retryGenerateTask(generateTasksDto, retries);
     }
 
     const data = parsed as Record<string, unknown>;
 
     if (!("tasks" in data)) {
-      this.logger.error(`AI response missing 'tasks' field: ${response.substring(0, 200)}...`, '', AiService.name);
+      this.logger.error(
+        `AI response missing 'tasks' field: ${response.substring(0, 200)}...`,
+        "",
+        AiService.name,
+      );
+
       throw new BadGatewayException(
         "A resposta da IA não contém o formato esperado.",
       );
@@ -123,14 +164,21 @@ Objetivo do usuário: ${objective}`;
 
     const tasks = data.tasks;
     if (!Array.isArray(tasks)) {
-      this.logger.error(`AI response 'tasks' field is not an array: ${response.substring(0, 200)}...`, '', AiService.name);
+      this.logger.error(
+        `AI response 'tasks' field is not an array: ${response.substring(0, 200)}...`,
+        "",
+        AiService.name,
+      );
       throw new BadGatewayException(
         "A resposta da IA não contém o formato esperado.",
       );
     }
 
     if (tasks.length === 0) {
-      this.logger.warn(`AI generated an empty task list for objective.`, AiService.name);
+      this.logger.warn(
+        `AI generated an empty task list for objective.`,
+        AiService.name,
+      );
       throw new UnprocessableEntityException(
         "A IA não conseguiu gerar tarefas para este objetivo.",
       );
@@ -139,61 +187,52 @@ Objetivo do usuário: ${objective}`;
     return { tasks: tasks as Array<{ title: string }> };
   }
 
-  private handleLlmError(error: unknown): never {
-    if (error instanceof Error) {
-      const errorMessage = error.message;
-      if (errorMessage.includes("Gemini API responded with status")) {
-        const statusMatch = errorMessage.match(/status (\d{3})/);
-        const status = statusMatch ? parseInt(statusMatch[1], 10) : 500;
+  private handleLlmError(
+    status: number,
+    generateTasksDto: GenerateTasksDto,
+    retries: number,
+  ): never {
+    if (status === 401 || status === 403) {
+      this.logger.warn(
+        `AI unauthorized for request. Status: ${status}`,
+        AiService.name,
+      );
+      throw new UnauthorizedException("API Key inválida ou sem permissão.");
+    }
 
-        if (status === 401 || status === 403) {
-          this.logger.warn(`Gemini API unauthorized for request. Status: ${status}`, AiService.name);
-          throw new UnauthorizedException("API Key inválida ou sem permissão.");
-        }
+    if (status === 429) {
+      this.retryGenerateTask(generateTasksDto, retries);
+    }
 
-        if (status === 429) {
-          this.logger.warn(`Gemini API rate limit exceeded. Status: ${status}`, AiService.name);
-          throw new HttpException(
-            "Limite de requisições da API de IA atingido.",
-            429,
-          );
-        }
-
-        if (status >= 500) {
-          this.logger.error(`Gemini API returned internal server error. Status: ${status}, Message: ${errorMessage}`, '', AiService.name);
-          throw new BadGatewayException(
-            "O serviço de IA retornou um erro interno.",
-          );
-        }
-      }
-
-      if (errorMessage.includes("Gemini API request timed out")) {
-        this.logger.error(`Gemini API request timed out.`, '', AiService.name);
-        throw new ServiceUnavailableException(
-          "O serviço de IA não respondeu a tempo. Tente novamente.",
-        );
-      }
-
-      if (
-        errorMessage.includes("Invalid response structure from Gemini API")
-      ) {
-        this.logger.error(`Gemini API returned invalid response structure.`, '', AiService.name);
-        throw new BadGatewayException(
-          "A IA retornou uma resposta em formato inesperado.",
-        );
-      }
-
-      this.logger.error(`Generic LLM error: ${errorMessage}`, error.stack, AiService.name);
-      // Generic network error or other unexpected fetch errors
+    if (status >= 500) {
+      this.logger.error(
+        `AI returned internal server error. Status: ${status}`,
+        "",
+        AiService.name,
+      );
       throw new BadGatewayException(
-        "Erro de conexão com o serviço de IA ou resposta inesperada.",
+        "O serviço de IA retornou um erro interno.",
       );
     }
 
-    this.logger.error(`Unknown LLM error: ${JSON.stringify(error)}`, '', AiService.name);
-    // Fallback for any other unknown error
+    this.logger.error(`Generic LLM error: ${status}`, AiService.name);
+
     throw new BadGatewayException(
-      "Ocorreu um erro inesperado ao se comunicar com o serviço de IA.",
+      "Erro de conexão com o serviço de IA ou resposta inesperada.",
+    );
+  }
+
+  private retryGenerateTask(
+    generateTasksDto: GenerateTasksDto,
+    retries: number,
+  ): Promise<Task[]> {
+    return new Promise((resolve) =>
+      setTimeout(
+        () => {
+          resolve(this.generateTasks(generateTasksDto, retries + 1));
+        },
+        this.THROTTLE ** retries + 1,
+      ),
     );
   }
 }

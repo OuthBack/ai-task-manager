@@ -1,6 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { LoggerService } from '../../common/logger/logger.service';
-
+import {
+  BadGatewayException,
+  BadRequestException,
+  Injectable,
+  ServiceUnavailableException,
+} from "@nestjs/common";
+import { LoggerService } from "../../common/logger/logger.service";
 
 interface GeminiRequest {
   contents: Array<{
@@ -11,27 +15,35 @@ interface GeminiRequest {
 }
 
 interface GeminiResponse {
-  candidates: Array<{
+  candidates?: Array<{
     content: {
       parts: Array<{
         text: string;
       }>;
     };
   }>;
+  error?: {
+    code: number;
+    message: string;
+  };
+}
+
+interface GeminiProviderResponse {
+  text: string;
+  status: number;
+  data: GeminiResponse;
 }
 
 @Injectable()
 export class GeminiProvider {
-  constructor(private readonly logger: LoggerService) {
-
-  }
+  constructor(private readonly logger: LoggerService) {}
 
   async complete(
     prompt: string,
     apiKey: string,
-    model: string = 'gemini-1.5-flash',
-    apiUrl: string = 'https://generativelanguage.googleapis.com/v1beta/models',
-  ): Promise<string> {
+    model: string = "gemini-2.5-flash",
+    apiUrl: string = "https://generativelanguage.googleapis.com/v1beta/models",
+  ): Promise<GeminiProviderResponse> {
     const url = `${apiUrl}/${model}:generateContent?key=${apiKey}`;
 
     const payload: GeminiRequest = {
@@ -46,49 +58,71 @@ export class GeminiProvider {
       ],
     };
 
-    this.logger.log(`Sending request to Gemini API. Model: ${model}, URL: ${apiUrl}/${model}:generateContent, Prompt (excerpt): ${prompt.substring(0, 100)}...`);
+    this.logger.log(
+      `Sending request to Gemini API. Model: ${model}, URL: ${apiUrl}/${model}:generateContent, Prompt (excerpt): ${prompt.substring(0, 100)}...`,
+    );
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
     try {
       const response = await fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
-        signal: controller.signal, // Associate the abort controller with the request
+        signal: controller.signal,
       });
 
-      clearTimeout(timeoutId); // Clear the timeout if the request completes in time
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        this.logger.error(`Gemini API responded with status ${response.status}: ${errorText}`, '', GeminiProvider.name);
-        throw new Error(`Gemini API responded with status ${response.status}: ${errorText}`);
-      }
+      clearTimeout(timeoutId);
 
       const data = (await response.json()) as GeminiResponse;
-      this.logger.log(`Received successful response from Gemini API. Status: ${response.status}`);
+      this.logger.log(
+        `Received response from Gemini API. data: ${JSON.stringify(data)}`,
+      );
+
+      if (response.status === 400) {
+        throw new BadRequestException(data.error?.message);
+      }
 
       if (
         !data.candidates ||
         !data.candidates[0] ||
         !data.candidates[0].content.parts[0]
       ) {
-        this.logger.error('Invalid response structure from Gemini API', '', GeminiProvider.name);
-        throw new Error('Invalid response structure from Gemini API');
+        this.logger.error(
+          "Invalid response structure from Gemini API",
+          "",
+          GeminiProvider.name,
+        );
+        throw new BadGatewayException(
+          "A IA retornou uma resposta em formato inesperado.",
+        );
       }
 
-      return data.candidates[0].content.parts[0].text;
+      return {
+        text: data.candidates[0].content.parts[0].text,
+        status: response.status,
+        data,
+      };
     } catch (error: unknown) {
       clearTimeout(timeoutId);
-      if (error instanceof Error && error.name === 'AbortError') {
-        this.logger.error('Gemini API request timed out after 30 seconds', '', GeminiProvider.name);
-        throw new Error('Gemini API request timed out after 30 seconds');
+      if (error instanceof Error && error.name === "AbortError") {
+        this.logger.error(
+          "Gemini API request timed out after 30 seconds",
+          "",
+          GeminiProvider.name,
+        );
+        throw new ServiceUnavailableException(
+          "O serviço de IA não respondeu a tempo. Tente novamente.",
+        );
       }
-      this.logger.error(`Error during Gemini API call: ${(error as Error).message}`, (error as Error).stack, GeminiProvider.name);
+      this.logger.error(
+        `Error during Gemini API call: ${(error as Error).message}`,
+        (error as Error).stack,
+        GeminiProvider.name,
+      );
       throw error;
     }
   }

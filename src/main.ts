@@ -32,9 +32,6 @@ async function bootstrap() {
   );
   */
 
-  // Global filters
-  app.useGlobalFilters();
-
   // Global interceptors
   app.useGlobalInterceptors(new LoggingInterceptor());
 
