@@ -13,7 +13,6 @@ import {
   UnprocessableEntityException,
 } from "@nestjs/common";
 
-// Mock AiService dependencies
 const mockGeminiProvider = {
   complete: jest.fn(),
 };
@@ -67,7 +66,6 @@ describe("AiService", () => {
     service = module.get<AiService>(AiService);
   });
 
-  // Restore spies and real timers after every test to prevent leaking between tests
   afterEach(() => {
     jest.restoreAllMocks();
     jest.useRealTimers();
@@ -238,7 +236,6 @@ describe("AiService", () => {
       });
 
       it("should throw BadGatewayException if response is not a valid object when retries are exhausted", async () => {
-        // "42" is valid JSON that deserialises to a number (not an object)
         await expect(
           (service as any).parseAndValidateResponse(
             "42",
@@ -430,9 +427,5 @@ describe("AiService", () => {
         "DB error during findOne",
       );
     });
-  });
-
-  describe("buildPrompt", () => {
-    // buildPrompt is a private method, tested indirectly via generateTasks.
   });
 });
