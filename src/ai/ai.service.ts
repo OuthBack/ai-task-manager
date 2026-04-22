@@ -70,14 +70,10 @@ export class AiService {
     for (const taskData of parsedResponse.tasks) {
       const task = await this.tasksRepository.create({
         title: taskData.title,
+        isAiGenerated: true,
       });
 
-      await this.tasksRepository.update(task.id, {});
-      const updatedTask = await this.tasksRepository.findOne(task.id);
-      if (updatedTask) {
-        updatedTask.isAiGenerated = true;
-        createdTasks.push(updatedTask);
-      }
+      createdTasks.push(task);
     }
 
     this.logger.log(
@@ -120,12 +116,6 @@ Objetivo do usuário: ${objective}`;
           `Failed to parse AI response JSON: ${response.substring(0, 200)}...`,
           undefined,
           AiService.name,
-        );
-      }
-
-      if (retries > 3) {
-        throw new BadGatewayException(
-          "A IA retornou uma resposta em formato inesperado.",
         );
       }
 

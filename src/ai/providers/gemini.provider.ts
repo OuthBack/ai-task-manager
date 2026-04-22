@@ -86,9 +86,11 @@ export class GeminiProvider {
         throw new BadRequestException(data.error?.message);
       }
 
-      if (
-        !data.candidates?.[0]?.content?.parts?.[0]
-      ) {
+      if (response.status !== 200) {
+        throw new BadGatewayException(data.error?.message);
+      }
+
+      if (!data.candidates?.[0]?.content?.parts?.[0]) {
         this.logger.error(
           "Invalid response structure from Gemini API",
           "",
