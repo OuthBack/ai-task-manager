@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1776860847641" clover="3.2.0">
+  <project timestamp="1776860847641" name="All files">
+    <metrics statements="231" coveredstatements="218" conditionals="49" coveredconditionals="36" methods="41" coveredmethods="39" elements="321" coveredelements="293" complexity="0" loc="231" ncloc="231" packages="9" files="15" classes="15"/>
+    <package name="ai">
+      <metrics statements="81" coveredstatements="78" conditionals="19" coveredconditionals="18" methods="10" coveredmethods="10"/>
+      <file name="ai.controller.ts" path="/workspaces/backend/src/ai/ai.controller.ts">
+        <metrics statements="9" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
+        <line num="14" count="1" type="stmt"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="19" count="1" type="stmt"/>
+        <line num="20" count="2" type="stmt"/>
+        <line num="58" count="1" type="stmt"/>
+        <line num="61" count="1" type="stmt"/>
+      </file>
+      <file name="ai.service.ts" path="/workspaces/backend/src/ai/ai.service.ts">
+        <metrics statements="72" coveredstatements="69" conditionals="19" coveredconditionals="18" methods="8" coveredmethods="8"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="9" count="2" type="stmt"/>
+        <line num="11" count="2" type="stmt"/>
+        <line num="12" count="2" type="stmt"/>
+        <line num="16" count="2" type="stmt"/>
+        <line num="19" count="2" type="stmt"/>
+        <line num="20" count="18" type="stmt"/>
+        <line num="23" count="18" type="stmt"/>
+        <line num="24" count="18" type="stmt"/>
+        <line num="25" count="18" type="stmt"/>
+        <line num="26" count="18" type="stmt"/>
+        <line num="33" count="33" type="stmt"/>
+        <line num="35" count="33" type="cond" truecount="1" falsecount="0"/>
+        <line num="36" count="2" type="stmt"/>
+        <line num="37" count="2" type="stmt"/>
+        <line num="43" count="31" type="stmt"/>
+        <line num="47" count="31" type="stmt"/>
+        <line num="49" count="31" type="stmt"/>
+        <line num="50" count="31" type="stmt"/>
+        <line num="52" count="31" type="stmt"/>
+        <line num="59" count="31" type="cond" truecount="1" falsecount="0"/>
+        <line num="60" count="18" type="stmt"/>
+        <line num="63" count="13" type="stmt"/>
+        <line num="69" count="7" type="stmt"/>
+        <line num="70" count="7" type="stmt"/>
+        <line num="71" count="8" type="stmt"/>
+        <line num="75" count="7" type="stmt"/>
+        <line num="76" count="6" type="stmt"/>
+        <line num="77" count="5" type="cond" truecount="1" falsecount="0"/>
+        <line num="78" count="5" type="stmt"/>
+        <line num="79" count="5" type="stmt"/>
+        <line num="83" count="4" type="stmt"/>
+        <line num="86" count="4" type="stmt"/>
+        <line num="90" count="31" type="stmt"/>
+        <line num="109" count="17" type="stmt"/>
+        <line num="110" count="17" type="stmt"/>
+        <line num="112" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="113" count="2" type="stmt"/>
+        <line num="119" count="0" type="stmt"/>
+        <line num="126" count="2" type="cond" truecount="1" falsecount="0"/>
+        <line num="127" count="2" type="stmt"/>
+        <line num="132" count="0" type="stmt"/>
+        <line num="135" count="15" type="cond" truecount="3" falsecount="0"/>
+        <line num="136" count="2" type="stmt"/>
+        <line num="142" count="2" type="cond" truecount="1" falsecount="0"/>
+        <line num="143" count="2" type="stmt"/>
+        <line num="148" count="0" type="stmt"/>
+        <line num="151" count="13" type="stmt"/>
+        <line num="153" count="13" type="cond" truecount="1" falsecount="0"/>
+        <line num="154" count="2" type="stmt"/>
+        <line num="160" count="2" type="stmt"/>
+        <line num="165" count="11" type="stmt"/>
+        <line num="166" count="11" type="cond" truecount="1" falsecount="0"/>
+        <line num="167" count="2" type="stmt"/>
+        <line num="172" count="2" type="stmt"/>
+        <line num="177" count="9" type="cond" truecount="1" falsecount="0"/>
+        <line num="178" count="2" type="stmt"/>
+        <line num="182" count="2" type="stmt"/>
+        <line num="187" count="7" type="stmt"/>
+        <line num="195" count="18" type="cond" truecount="3" falsecount="0"/>
+        <line num="196" count="2" type="stmt"/>
+        <line num="200" count="2" type="stmt"/>
+        <line num="203" count="16" type="cond" truecount="1" falsecount="0"/>
+        <line num="204" count="12" type="stmt"/>
+        <line num="207" count="4" type="cond" truecount="1" falsecount="0"/>
+        <line num="208" count="2" type="stmt"/>
+        <line num="213" count="2" type="stmt"/>
+        <line num="218" count="2" type="stmt"/>
+        <line num="220" count="2" type="stmt"/>
+        <line num="229" count="12" type="stmt"/>
+        <line num="230" count="12" type="stmt"/>
+        <line num="232" count="12" type="stmt"/>
+      </file>
+    </package>
+    <package name="ai.dto">
+      <metrics statements="10" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <file name="ai-response.dto.ts" path="/workspaces/backend/src/ai/dto/ai-response.dto.ts">
+        <metrics statements="5" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="0" type="stmt"/>
+        <line num="3" count="0" type="stmt"/>
+        <line num="8" count="0" type="stmt"/>
+        <line num="11" count="0" type="stmt"/>
+        <line num="16" count="0" type="stmt"/>
+      </file>
+      <file name="generate-tasks.dto.ts" path="/workspaces/backend/src/ai/dto/generate-tasks.dto.ts">
+        <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
+        <line num="21" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="ai.providers">
+      <metrics statements="26" coveredstatements="26" conditionals="7" coveredconditionals="5" methods="3" coveredmethods="2"/>
+      <file name="gemini.provider.ts" path="/workspaces/backend/src/ai/providers/gemini.provider.ts">
+        <metrics statements="26" coveredstatements="26" conditionals="7" coveredconditionals="5" methods="3" coveredmethods="2"/>
+        <line num="1" count="3" type="stmt"/>
+        <line num="7" count="3" type="stmt"/>
+        <line num="38" count="3" type="stmt"/>
+        <line num="39" count="9" type="stmt"/>
+        <line num="47" count="11" type="stmt"/>
+        <line num="49" count="11" type="stmt"/>
+        <line num="61" count="11" type="stmt"/>
+        <line num="65" count="11" type="stmt"/>
+        <line num="66" count="11" type="stmt"/>
+        <line num="68" count="11" type="stmt"/>
+        <line num="69" count="11" type="stmt"/>
+        <line num="78" count="8" type="stmt"/>
+        <line num="80" count="8" type="stmt"/>
+        <line num="81" count="8" type="stmt"/>
+        <line num="85" count="8" type="cond" truecount="1" falsecount="0"/>
+        <line num="86" count="2" type="stmt"/>
+        <line num="89" count="6" type="cond" truecount="1" falsecount="0"/>
+        <line num="92" count="4" type="stmt"/>
+        <line num="97" count="4" type="stmt"/>
+        <line num="102" count="2" type="stmt"/>
+        <line num="108" count="9" type="stmt"/>
+        <line num="109" count="9" type="cond" truecount="3" falsecount="0"/>
+        <line num="110" count="2" type="stmt"/>
+        <line num="115" count="2" type="stmt"/>
+        <line num="119" count="7" type="stmt"/>
+        <line num="124" count="7" type="stmt"/>
+      </file>
+    </package>
+    <package name="common.interceptors">
+      <metrics statements="11" coveredstatements="11" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="3"/>
+      <file name="logging.interceptor.ts" path="/workspaces/backend/src/common/interceptors/logging.interceptor.ts">
+        <metrics statements="11" coveredstatements="11" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="3"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="8" count="1" type="stmt"/>
+        <line num="12" count="1" type="stmt"/>
+        <line num="14" count="3" type="stmt"/>
+        <line num="17" count="2" type="stmt"/>
+        <line num="18" count="2" type="stmt"/>
+        <line num="19" count="2" type="stmt"/>
+        <line num="20" count="2" type="stmt"/>
+        <line num="22" count="2" type="stmt"/>
+        <line num="24" count="2" type="stmt"/>
+        <line num="25" count="2" type="stmt"/>
+      </file>
+    </package>
+    <package name="common.logger">
+      <metrics statements="9" coveredstatements="9" conditionals="10" coveredconditionals="10" methods="6" coveredmethods="6"/>
+      <file name="logger.service.ts" path="/workspaces/backend/src/common/logger/logger.service.ts">
+        <metrics statements="9" coveredstatements="9" conditionals="10" coveredconditionals="10" methods="6" coveredmethods="6"/>
+        <line num="1" count="6" type="stmt"/>
+        <line num="4" count="6" type="stmt"/>
+        <line num="5" count="13" type="stmt"/>
+        <line num="8" count="13" type="stmt"/>
+        <line num="12" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="16" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="20" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="24" count="2" type="cond" truecount="2" falsecount="0"/>
+        <line num="28" count="2" type="cond" truecount="2" falsecount="0"/>
+      </file>
+    </package>
+    <package name="config">
+      <metrics statements="1" coveredstatements="0" conditionals="8" coveredconditionals="0" methods="1" coveredmethods="0"/>
+      <file name="configuration.ts" path="/workspaces/backend/src/config/configuration.ts">
+        <metrics statements="1" coveredstatements="0" conditionals="8" coveredconditionals="0" methods="1" coveredmethods="0"/>
+        <line num="1" count="0" type="stmt"/>
+      </file>
+    </package>
+    <package name="tasks">
+      <metrics statements="68" coveredstatements="64" conditionals="5" coveredconditionals="3" methods="18" coveredmethods="18"/>
+      <file name="tasks.controller.ts" path="/workspaces/backend/src/tasks/tasks.controller.ts">
+        <metrics statements="18" coveredstatements="18" conditionals="0" coveredconditionals="0" methods="6" coveredmethods="6"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="13" count="1" type="stmt"/>
+        <line num="14" count="1" type="stmt"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="17" count="1" type="stmt"/>
+        <line num="21" count="1" type="stmt"/>
+        <line num="22" count="7" type="stmt"/>
+        <line num="36" count="1" type="stmt"/>
+        <line num="37" count="1" type="stmt"/>
+        <line num="47" count="1" type="stmt"/>
+        <line num="48" count="1" type="stmt"/>
+        <line num="63" count="1" type="stmt"/>
+        <line num="64" count="2" type="stmt"/>
+        <line num="83" count="1" type="stmt"/>
+        <line num="87" count="1" type="stmt"/>
+        <line num="102" count="1" type="stmt"/>
+        <line num="103" count="2" type="stmt"/>
+      </file>
+      <file name="tasks.repository.ts" path="/workspaces/backend/src/tasks/tasks.repository.ts">
+        <metrics statements="14" coveredstatements="14" conditionals="2" coveredconditionals="2" methods="6" coveredmethods="6"/>
+        <line num="1" count="5" type="stmt"/>
+        <line num="2" count="5" type="stmt"/>
+        <line num="3" count="5" type="stmt"/>
+        <line num="4" count="5" type="stmt"/>
+        <line num="7" count="5" type="stmt"/>
+        <line num="10" count="10" type="stmt"/>
+        <line num="14" count="1" type="stmt"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="19" count="2" type="stmt"/>
+        <line num="25" count="4" type="stmt"/>
+        <line num="31" count="2" type="stmt"/>
+        <line num="32" count="2" type="stmt"/>
+        <line num="36" count="2" type="stmt"/>
+        <line num="37" count="2" type="cond" truecount="2" falsecount="0"/>
+      </file>
+      <file name="tasks.service.ts" path="/workspaces/backend/src/tasks/tasks.service.ts">
+        <metrics statements="36" coveredstatements="32" conditionals="3" coveredconditionals="1" methods="6" coveredmethods="6"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="2" count="2" type="stmt"/>
+        <line num="6" count="2" type="stmt"/>
+        <line num="9" count="2" type="stmt"/>
+        <line num="11" count="7" type="stmt"/>
+        <line num="12" count="7" type="stmt"/>
+        <line num="16" count="2" type="stmt"/>
+        <line num="19" count="2" type="stmt"/>
+        <line num="20" count="2" type="stmt"/>
+        <line num="21" count="2" type="stmt"/>
+        <line num="25" count="1" type="stmt"/>
+        <line num="26" count="1" type="stmt"/>
+        <line num="27" count="1" type="stmt"/>
+        <line num="28" count="1" type="stmt"/>
+        <line num="32" count="4" type="stmt"/>
+        <line num="33" count="4" type="stmt"/>
+        <line num="34" count="4" type="cond" truecount="1" falsecount="0"/>
+        <line num="35" count="2" type="stmt"/>
+        <line num="36" count="2" type="stmt"/>
+        <line num="38" count="2" type="stmt"/>
+        <line num="39" count="2" type="stmt"/>
+        <line num="43" count="2" type="stmt"/>
+        <line num="46" count="2" type="stmt"/>
+        <line num="47" count="1" type="stmt"/>
+        <line num="48" count="1" type="cond" truecount="0" falsecount="1"/>
+        <line num="49" count="0" type="stmt"/>
+        <line num="52" count="0" type="stmt"/>
+        <line num="54" count="1" type="stmt"/>
+        <line num="55" count="1" type="stmt"/>
+        <line num="59" count="2" type="stmt"/>
+        <line num="60" count="2" type="stmt"/>
+        <line num="61" count="1" type="stmt"/>
+        <line num="62" count="1" type="cond" truecount="0" falsecount="1"/>
+        <line num="63" count="0" type="stmt"/>
+        <line num="66" count="0" type="stmt"/>
+        <line num="68" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="tasks.dto">
+      <metrics statements="17" coveredstatements="17" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <file name="create-task.dto.ts" path="/workspaces/backend/src/tasks/dto/create-task.dto.ts">
+        <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="14" count="1" type="stmt"/>
+      </file>
+      <file name="task-response.dto.ts" path="/workspaces/backend/src/tasks/dto/task-response.dto.ts">
+        <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="2" type="stmt"/>
+        <line num="3" count="2" type="stmt"/>
+        <line num="8" count="2" type="stmt"/>
+        <line num="14" count="2" type="stmt"/>
+        <line num="20" count="2" type="stmt"/>
+        <line num="26" count="2" type="stmt"/>
+        <line num="32" count="2" type="stmt"/>
+        <line num="38" count="2" type="stmt"/>
+      </file>
+      <file name="update-task.dto.ts" path="/workspaces/backend/src/tasks/dto/update-task.dto.ts">
+        <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="1" type="stmt"/>
+        <line num="2" count="1" type="stmt"/>
+        <line num="4" count="1" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="25" count="1" type="stmt"/>
+      </file>
+    </package>
+    <package name="tasks.entities">
+      <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <file name="task.entity.ts" path="/workspaces/backend/src/tasks/entities/task.entity.ts">
+        <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+        <line num="1" count="5" type="stmt"/>
+        <line num="10" count="5" type="stmt"/>
+        <line num="12" count="5" type="stmt"/>
+        <line num="15" count="5" type="stmt"/>
+        <line num="18" count="5" type="stmt"/>
+        <line num="21" count="5" type="stmt"/>
+        <line num="24" count="5" type="stmt"/>
+        <line num="27" count="5" type="stmt"/>
+      </file>
+    </package>
+  </project>
+</coverage>

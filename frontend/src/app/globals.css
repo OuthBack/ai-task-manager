@@ -1,0 +1,169 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+  }
+
+  * {
+    scrollbar-width: none;
+  }
+
+  /* For WebKit (Chrome & Safari). */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue",
+    sans-serif;
+  background: linear-gradient(135deg, #f5f5f7 0%, #e8e8ed 100%);
+  color: #1d1d1f;
+  line-height: 1.5;
+}
+
+/* CSS Variables */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f7;
+  --bg-tertiary: #e8e8ed;
+
+  --text-primary: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-tertiary: #aeaeb2;
+
+  /* Primary Colors - Blue */
+  --accent: #007aff;
+  --accent-hover: #0071e3;
+  --accent-light: #e8f1ff;
+  --accent-dark: #0051c8;
+
+  /* Secondary Colors - Purple */
+  --secondary: #9933ff;
+  --secondary-light: #f0e6ff;
+  --secondary-hover: #8822ee;
+
+  /* Tertiary Colors - Cyan */
+  --tertiary: #00d4ff;
+  --tertiary-light: #e0f8ff;
+  --tertiary-hover: #00bfcc;
+
+  /* Status Colors */
+  --success: #34c759;
+  --success-light: #e8f5e8;
+  --success-hover: #2fa84f;
+  --error: #ff3b30;
+  --error-light: #ffe8e8;
+  --error-hover: #e62e27;
+  --warning: #ff9500;
+  --warning-light: #ffe8d5;
+  --warning-hover: #ff8800;
+
+  /* Borders */
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.15);
+
+  /* Gradients */
+  --gradient-blue: linear-gradient(135deg, #007aff 0%, #0051c8 100%);
+  --gradient-purple: linear-gradient(135deg, #9933ff 0%, #7722cc 100%);
+  --gradient-cyan: linear-gradient(135deg, #00d4ff 0%, #00bfcc 100%);
+  --gradient-success: linear-gradient(135deg, #34c759 0%, #2fa84f 100%);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 12px 32px rgba(0, 0, 0, 0.18);
+
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animations */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-slideDown {
+  animation: slideDown var(--transition-normal) ease-out;
+}
+
+.animate-fadeIn {
+  animation: fadeIn var(--transition-normal) ease-out;
+}
+
+.animate-bounce {
+  animation: bounce var(--transition-normal) ease-in-out;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection styling */
+::selection {
+  background-color: var(--accent);
+  color: #ffffff;
+}
