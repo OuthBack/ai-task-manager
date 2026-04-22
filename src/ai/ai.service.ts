@@ -57,7 +57,7 @@ export class AiService {
     );
 
     if (response.status !== 200) {
-      this.handleLlmError(response.status, generateTasksDto, retries);
+      return this.handleLlmError(response.status, generateTasksDto, retries);
     }
 
     const parsedResponse = await this.parseAndValidateResponse(
@@ -191,7 +191,7 @@ Objetivo do usuário: ${objective}`;
     status: number,
     generateTasksDto: GenerateTasksDto,
     retries: number,
-  ): never {
+  ): Promise<Task[]> {
     if (status === 401 || status === 403) {
       this.logger.warn(
         `AI unauthorized for request. Status: ${status}`,
@@ -201,7 +201,7 @@ Objetivo do usuário: ${objective}`;
     }
 
     if (status === 429) {
-      this.retryGenerateTask(generateTasksDto, retries);
+      return this.retryGenerateTask(generateTasksDto, retries);
     }
 
     if (status >= 500) {
@@ -231,7 +231,7 @@ Objetivo do usuário: ${objective}`;
         () => {
           resolve(this.generateTasks(generateTasksDto, retries + 1));
         },
-        this.THROTTLE ** retries + 1,
+        this.THROTTLE ** (retries + 1),
       ),
     );
   }
